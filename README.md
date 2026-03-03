@@ -1,39 +1,41 @@
 # nblm-nix
 
-A Nix-optimized Python CLI and Zsh wrapper for [NotebookLM](https://notebooklm.google.com/), built upon [notebooklm-py](https://github.com/teng-lin/notebooklm-py) (v0.3.2). This project ensures a seamless execution environment on NixOS and similar systems.
+A Nix-optimized Python CLI and Zsh wrapper for [NotebookLM](https://notebooklm.google.com/), built upon [notebooklm-py](https://github.com/teng-lin/notebooklm-py) (v0.3.2). This project ensures a seamless execution environment on NixOS and similar systems by wrapping Playwright and extending timeouts.
 
 ## Features
 
 - **Sandbox Mode**: Creates a temporary notebook (`tmp_[timestamp]`) for immediate analysis. The notebook is automatically deleted upon exit to maintain environment hygiene.
-- **FZF-Powered Interface**: Interactive selection for actions, notebooks, podcast formats (`deep-dive`, `brief`, `critique`, `debate`), and audio lengths.
-- **Background Generation**: Audio/Podcast generation processes are offloaded to the background, allowing uninterrupted terminal usage.
+- **FZF-Powered Interface**: Interactive selection for actions, notebooks, podcast formats, and audio lengths.
+- **Background Generation**: Audio generation processes are offloaded to the background, allowing uninterrupted terminal usage.
 - **Nix-Native Enhancements**:
-    - **Playwright Integration**: Pre-configured `PLAYWRIGHT_BROWSERS_PATH` via `makeWrapper` for out-of-the-box browser functionality.
-    - **Extended Timeouts**: Automatic `postPatch` during build to increase RPC and generation timeouts to 1800s, accommodating large source files.
-
-## Technical Specifications
-
-- **Version**: 0.3.2
-- **Language**: Python 3
-- **Dependencies**: `httpx`, `click`, `rich`, `playwright`, `fzf`, `gnugrep`, `coreutils`
+    - **Playwright Integration**: Pre-configured `PLAYWRIGHT_BROWSERS_PATH` via `makeWrapper`.
+    - **Extended Timeouts**: Increased RPC and generation timeouts to 1800s via `postPatch` to handle large files.
 
 ## Installation
 
-### 1. Build via Nix
+### 1. Install via Nix Profile
+
+To install the `nblm` command globally in your environment:
 
 ```bash
- nix build .#default
+ nix profile install github:yktsnet/nblm-nix
 ```
 
-### 2. Zsh Integration
+### 2. Run without Installation
 
-Add the following function to your Zsh configuration to utilize the `nblm` wrapper:
+You can execute the tool directly using Nix Flakes:
+
+```bash
+ nix run github:yktsnet/nblm-nix
+```
+
+### 3. Zsh Alias (Optional)
+
+Since the package already provides the `nblm` binary, you can simply use it. If you need an alias or specific function:
 
 ```zsh
- function nblm() {
-   # Executes the wrapped nblm-env
-   nblm
- }
+ # No path configuration needed if installed via nix profile
+ alias nblm='nblm'
 ```
 
 ## Usage
@@ -50,9 +52,9 @@ Run the command in your terminal:
 
 ## Technical Improvements
 
-- **Playwright Wrapping**: Utilizes Nix `makeWrapper` to ensure the Playwright driver correctly locates its hermetic browser binaries.
-- **Source Patching**: Modifies the upstream source during the build phase to replace default 30/300s timeouts with 1800s via `sed`.
-- **Non-Interactive Cleanup**: Uses the `-y` flag for `notebooklm delete` commands to ensure streamlined exit logic.
+- **Playwright Wrapping**: Ensures the Playwright driver correctly locates browser binaries on NixOS.
+- **Source Patching**: Replaces default 30/300s timeouts with 1800s via `sed` during the build phase.
+- **Dependency Management**: Automatically includes `fzf`, `gnugrep`, and `coreutils` in the runtime `PATH`.
 
 ## License
 
