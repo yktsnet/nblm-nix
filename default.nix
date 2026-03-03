@@ -14,7 +14,7 @@ let
     };
 
     postPatch = ''
-      find src -type f -name "*.py" -exec sed -E -i 's/timeout[[:space:]]*=[[:space:]]*[0-9]+/timeout=1800/g' {} +
+      find src -type f -name "*.py" -exec sed -E -i 's/\btimeout[[:space:]]*=[[:space:]]*[0-9]+/timeout=1800/g' {} +
     '';
     build-system = with pkgs.python3Packages; [ hatchling hatch-fancy-pypi-readme ];
     dependencies = with pkgs.python3Packages; [ httpx click rich playwright ];

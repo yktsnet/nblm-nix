@@ -29,13 +29,14 @@ You can execute the tool directly using Nix Flakes:
  nix run github:yktsnet/nblm-nix
 ```
 
-### 3. Zsh Alias (Optional)
+### 3. NixOS Configuration (Optional)
 
-Since the package already provides the `nblm` binary, you can simply use it. If you need an alias or specific function:
+To make `nblm` permanently available via `configuration.nix`:
 
-```zsh
- # No path configuration needed if installed via nix profile
- alias nblm='nblm'
+```nix
+environment.systemPackages = [
+  (builtins.getFlake "github:yktsnet/nblm-nix").packages.${system}.default
+];
 ```
 
 ## Usage

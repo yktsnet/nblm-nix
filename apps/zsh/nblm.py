@@ -60,6 +60,7 @@ def chat_loop(nb_id, is_saved):
         )
         if user_q == "c":
             if not current_is_saved:
+                run_cmd(f"notebooklm use {shlex.quote(nb_id)}")
                 run_cmd("notebooklm delete -y")
             break
         elif user_q == "s":
@@ -80,7 +81,11 @@ def chat_loop(nb_id, is_saved):
             if not length:
                 continue
             ts = time.strftime("%Y%m%d_%H%M%S")
-            out_file = os.path.expanduser(f"~/Downloads/notebooklm_{nb_id}_{ts}.mp4")
+            download_dir = os.environ.get(
+                "XDG_DOWNLOAD_DIR", os.path.expanduser("~/Downloads")
+            )
+            os.makedirs(download_dir, exist_ok=True)
+            out_file = os.path.join(download_dir, f"notebooklm_{nb_id}_{ts}.mp4")
             bg_podcast(nb_id, fmt, length, out_file)
         elif user_q:
             run_cmd(f"notebooklm ask {shlex.quote(user_q)}")
