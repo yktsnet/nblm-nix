@@ -1,50 +1,63 @@
 # nblm-nix
 
-A Nix-integrated Python CLI and Zsh wrapper for [NotebookLM](https://notebooklm.google.com/), built upon [notebooklm-py](https://github.com/teng-lin/notebooklm-py).
+A Nix-optimized Python CLI and Zsh wrapper for [NotebookLM](https://notebooklm.google.com/), built upon [notebooklm-py](https://github.com/teng-lin/notebooklm-py) (v0.3.2). This project ensures a seamless execution environment on NixOS and similar systems.
 
 ## Features
 
-- **Sandbox Mode**: Quickly create a temporary notebook for analysis. The notebook is automatically deleted upon exit to keep your environment clean.
-- **FZF-Powered Interface**: Interactive selection for notebooks, podcast formats (`deep-dive`, `critique`, etc.), and audio lengths.
-- **Background Generation**: Audio generation runs in the background, allowing you to continue working in your terminal.
-- **Nix-Optimized**: 
-    - Pre-configured Playwright environment.
-    - Extended timeouts (up to 1800s) via Nix `postPatch` to handle large source files reliably.
+- **Sandbox Mode**: Creates a temporary notebook (`tmp_[timestamp]`) for immediate analysis. The notebook is automatically deleted upon exit to maintain environment hygiene.
+- **FZF-Powered Interface**: Interactive selection for actions, notebooks, podcast formats (`deep-dive`, `brief`, `critique`, `debate`), and audio lengths.
+- **Background Generation**: Audio/Podcast generation processes are offloaded to the background, allowing uninterrupted terminal usage.
+- **Nix-Native Enhancements**:
+    - **Playwright Integration**: Pre-configured `PLAYWRIGHT_BROWSERS_PATH` via `makeWrapper` for out-of-the-box browser functionality.
+    - **Extended Timeouts**: Automatic `postPatch` during build to increase RPC and generation timeouts to 1800s, accommodating large source files.
 
-## Installation & Setup
+## Technical Specifications
 
-### 1. Nix Package
-This repository provides a `default.nix` which defines the `notebooklm` package with all necessary Python dependencies and Playwright browser paths.
+- **Version**: 0.3.2
+- **Language**: Python 3
+- **Dependencies**: `httpx`, `click`, `rich`, `playwright`, `fzf`, `gnugrep`, `coreutils`
+
+## Installation
+
+### 1. Build via Nix
+
+```bash
+ nix build .#default
+```
 
 ### 2. Zsh Integration
-To use the `nblm` command as a Zsh function, add the following to your Zsh configuration (e.g., `home-manager` or `.zshrc`):
+
+Add the following function to your Zsh configuration to utilize the `nblm` wrapper:
 
 ```zsh
-function nblm() {
-  # Replace the path with your actual script location
-  python3 /path/to/nblm-nix/apps/zsh/nblm.py
-}
-
+ function nblm() {
+   # Executes the wrapped nblm-env
+   nblm
+ }
 ```
 
 ## Usage
 
-Simply run the command in your terminal:
+Run the command in your terminal:
 
 ```bash
-nblm
+ nblm
 ```
-1. **Select Action**: Choose between Sandbox (New), Existing Notebook, or Delete.
-2. **Sandbox Mode**: Input URLs or file paths. Type `a` to start the analysis/summary, or `c` to abort and cleanup.
-3. **Chat/Podcast**: Once inside a notebook, use `src` to add sources, `p` to generate a podcast in the background, or `s` to save/rename the temporary notebook.
 
-## Key Technical Enhancements
+1. **Select Action**: Choose from Sandbox (New), Existing Notebook, or Delete Notebook.
+2. **Sandbox Flow**: Input URLs or file paths. Enter `a` to start the automated analysis/summary or `c` to abort and cleanup.
+3. **Chat/Podcast**: Within a notebook session, use `src` to add sources, `p` to trigger background podcast generation, or `s` to save/rename the temporary notebook.
 
-Compared to the upstream `notebooklm-py`, this Nix-native version includes:
+## Technical Improvements
 
-- **Playwright Wrapping**: Uses `makeWrapper` to set `PLAYWRIGHT_BROWSERS_PATH`, ensuring the CLI works out-of-the-box on NixOS.
-- **Timeout Patches**: Automatically modifies the source code during the Nix build phase to extend RPC and generation timeouts from 30/300 seconds to 1800 seconds.
+- **Playwright Wrapping**: Utilizes Nix `makeWrapper` to ensure the Playwright driver correctly locates its hermetic browser binaries.
+- **Source Patching**: Modifies the upstream source during the build phase to replace default 30/300s timeouts with 1800s via `sed`.
+- **Non-Interactive Cleanup**: Uses the `-y` flag for `notebooklm delete` commands to ensure streamlined exit logic.
+
+## License
+
+MIT License - Copyright (c) 2026 yktsnet
 
 ## Acknowledgment
 
-Special thanks to **@teng-lin** for the original [notebooklm-py](https://github.com/teng-lin/notebooklm-py) implementation. This project serves as a Nix-specific enhancement and workflow wrapper.
+Special thanks to **@teng-lin** for the original [notebooklm-py](https://github.com/teng-lin/notebooklm-py) implementation.
