@@ -1,8 +1,17 @@
+#!/usr/bin/env python3
 import os
 import subprocess
 import time
 import tempfile
 import shlex
+import sys
+import shutil
+
+
+def check_dependencies():
+    for cmd in ["fzf", "notebooklm"]:
+        if not shutil.which(cmd):
+            sys.exit(1)
 
 
 def run_cmd(cmd, capture=False):
@@ -41,7 +50,6 @@ def bg_podcast(nb_id, fmt, length, out_file):
     subprocess.Popen(
         script, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
     )
-    print(f"Podcast generation started in background. It will be saved to {out_file}")
 
 
 def chat_loop(nb_id, is_saved):
@@ -52,7 +60,6 @@ def chat_loop(nb_id, is_saved):
         )
         if user_q == "c":
             if not current_is_saved:
-                print("Deleting temporary notebook...")
                 run_cmd("notebooklm delete -y")
             break
         elif user_q == "s":
@@ -60,7 +67,6 @@ def chat_loop(nb_id, is_saved):
             if new_title:
                 run_cmd(f"notebooklm rename {shlex.quote(new_title)}")
             current_is_saved = True
-            print("Notebook marked as saved.")
         elif user_q == "src":
             src_input = input("URL or file path: ")
             if src_input:
@@ -77,11 +83,11 @@ def chat_loop(nb_id, is_saved):
             out_file = os.path.expanduser(f"~/Downloads/notebooklm_{nb_id}_{ts}.mp4")
             bg_podcast(nb_id, fmt, length, out_file)
         elif user_q:
-            print("Thinking...")
             run_cmd(f"notebooklm ask {shlex.quote(user_q)}")
 
 
 def main():
+    check_dependencies()
     action_raw = select_fzf(
         ["1: Sandbox (New)", "2: Existing Notebook", "3: Delete Notebook"],
         "Select Action: ",
@@ -91,7 +97,6 @@ def main():
     action = action_raw.split(":")[0]
     if action == "1":
         ts = time.strftime("%s")
-        print("Creating sandbox notebook...")
         nb_id = run_cmd(
             f"notebooklm create {shlex.quote('tmp_' + ts)} | grep -oE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' | head -n 1",
             capture=True,
@@ -111,7 +116,6 @@ def main():
                     run_cmd(
                         f"notebooklm source add {shlex.quote(os.path.expanduser(src_input))}"
                     )
-            print("Summarizing...")
             run_cmd(
                 "notebooklm ask 'Please summarize all provided sources and extract the most important insights.'"
             )
